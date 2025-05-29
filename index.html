@@ -1,0 +1,433 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二次元美少女桌宠</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+        }
+
+        #desktop-pet {
+            position: fixed;
+            bottom: 100px;
+            right: 100px;
+            width: 200px;
+            height: 250px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 9999;
+        }
+
+        .pet-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 二次元美少女形象 */
+        .anime-girl {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250"><circle cx="100" cy="80" r="40" fill="%23ffe0f0"/><path d="M60 80 Q100 120 140 80" stroke="%23ff9ec0" stroke-width="3" fill="none"/><circle cx="85" cy="70" r="8" fill="%23000"/><circle cx="115" cy="70" r="8" fill="%23000"/><circle cx="85" cy="70" r="4" fill="%23fff"/><circle cx="115" cy="70" r="4" fill="%23fff"/><path d="M100 120 Q120 150 100 170 Q80 150 100 120" fill="%23ff9ec0"/><path d="M50 140 Q70 100 100 120 Q130 100 150 140" fill="%23ffb6c1"/><path d="M40 180 Q80 200 100 220 Q120 200 160 180" fill="%23ff9ec0"/></svg>') no-repeat center;
+            background-size: contain;
+            transition: all 0.3s;
+        }
+
+        /* 状态指示器 */
+        .status {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+
+        /* 对话气泡 */
+        .speech-bubble {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            max-width: 200px;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent;
+        }
+
+        /* 控制面板 */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 10000;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ff9ec0;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.25);
+        }
+
+        /* 动画 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes blink {
+            0%, 45%, 55%, 100% { height: 20px; }
+            50% { height: 5px; }
+        }
+
+        @keyframes dance {
+            0% { transform: rotate(0); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(0); }
+            75% { transform: rotate(-10deg); }
+            100% { transform: rotate(0); }
+        }
+
+        .pet-container {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* 装饰元素 */
+        .decoration {
+            position: absolute;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .sakura {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M10 0 C12 4, 16 4, 20 5 C16 8, 16 12, 10 20 C4 12, 4 8, 0 5 C4 4, 8 4, 10 0" fill="%23ffb7c5"/></svg>') no-repeat center;
+            background-size: contain;
+            animation: float 8s infinite ease-in-out;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            #desktop-pet {
+                width: 150px;
+                height: 190px;
+                right: 30px;
+                bottom: 80px;
+            }
+            
+            .controls {
+                bottom: 10px;
+                padding: 10px;
+            }
+            
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 樱花装饰 -->
+    <div class="decoration sakura" style="top: 10%; left: 15%; animation-delay: 0s;"></div>
+    <div class="decoration sakura" style="top: 20%; right: 10%; animation-delay: -2s;"></div>
+    <div class="decoration sakura" style="bottom: 15%; left: 20%; animation-delay: -4s;"></div>
+    <div class="decoration sakura" style="bottom: 25%; right: 15%; animation-delay: -6s;"></div>
+    
+    <div id="desktop-pet">
+        <div class="pet-container">
+            <div class="anime-girl" id="anime-girl"></div>
+            <div class="status" id="status">心情: 开心</div>
+            <div class="speech-bubble" id="speech"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" id="feed-btn">🍰</button>
+        <button class="control-btn" id="play-btn">🎮</button>
+        <button class="control-btn" id="pet-btn">❤️</button>
+        <button class="control-btn" id="dance-btn">💃</button>
+        <button class="control-btn" id="talk-btn">💬</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pet = document.getElementById('desktop-pet');
+            const animeGirl = document.getElementById('anime-girl');
+            const statusText = document.getElementById('status');
+            const speechBubble = document.getElementById('speech');
+            const feedBtn = document.getElementById('feed-btn');
+            const playBtn = document.getElementById('play-btn');
+            const petBtn = document.getElementById('pet-btn');
+            const danceBtn = document.getElementById('dance-btn');
+            const talkBtn = document.getElementById('talk-btn');
+            
+            // 美少女的对话内容
+            const dialogues = [
+                "你好呀，主人！",
+                "今天过得怎么样？",
+                "要一起玩游戏吗？",
+                "我有点饿了~",
+                "最喜欢主人了！",
+                "摸摸头好舒服~",
+                "想听我唱歌吗？",
+                "外面的天气真好！",
+                "不要不理我嘛~"
+            ];
+            
+            // 美少女的心情状态
+            let mood = 'happy';
+            let isDancing = false;
+            let isSpeaking = false;
+            
+            // 显示对话
+            function showSpeech(text) {
+                if (isSpeaking) return;
+                
+                isSpeaking = true;
+                speechBubble.textContent = text;
+                speechBubble.style.opacity = '1';
+                
+                setTimeout(() => {
+                    speechBubble.style.opacity = '0';
+                    isSpeaking = false;
+                }, 3000);
+            }
+            
+            // 喂食互动
+            feedBtn.addEventListener('click', function() {
+                mood = 'eating';
+                statusText.textContent = '心情: 享用美食中...';
+                showSpeech('蛋糕好好吃！谢谢主人~');
+                
+                // 添加动画效果
+                animeGirl.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    animeGirl.style.transform = 'scale(1)';
+                    mood = 'happy';
+                    statusText.textContent = '心情: 开心';
+                }, 2000);
+            });
+            
+            // 玩耍互动
+            playBtn.addEventListener('click', function() {
+                mood = 'playing';
+                statusText.textContent = '心情: 玩耍中';
+                showSpeech('一起来玩游戏吧！');
+                
+                animeGirl.style.transform = 'rotate(10deg)';
+                setTimeout(() => {
+                    animeGirl.style.transform = 'rotate(-10deg)';
+                    setTimeout(() => {
+                        animeGirl.style.transform = 'rotate(0)';
+                        mood = 'happy';
+                        statusText.textContent = '心情: 开心';
+                    }, 300);
+                }, 300);
+            });
+            
+            // 抚摸互动
+            petBtn.addEventListener('click', function() {
+                mood = 'loved';
+                statusText.textContent = '心情: 幸福满满';
+                showSpeech('主人的手好温暖~');
+                
+                animeGirl.style.filter = 'brightness(1.2)';
+                setTimeout(() => {
+                    animeGirl.style.filter = 'brightness(1)';
+                    mood = 'happy';
+                    statusText.textContent = '心情: 开心';
+                }, 2000);
+            });
+            
+            // 跳舞互动
+            danceBtn.addEventListener('click', function() {
+                if (isDancing) return;
+                
+                isDancing = true;
+                mood = 'dancing';
+                statusText.textContent = '心情: 跳舞中';
+                showSpeech('啦啦啦~一起跳舞吧！');
+                
+                animeGirl.style.animation = 'dance 0.5s infinite';
+                
+                setTimeout(() => {
+                    animeGirl.style.animation = '';
+                    isDancing = false;
+                    mood = 'happy';
+                    statusText.textContent = '心情: 开心';
+                }, 5000);
+            });
+            
+            // 对话互动
+            talkBtn.addEventListener('click', function() {
+                const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
+                showSpeech(randomDialogue);
+            });
+            
+            // 随机动作和对话
+            setInterval(() => {
+                if (mood === 'happy' && Math.random() > 0.7 && !isSpeaking) {
+                    const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
+                    showSpeech(randomDialogue);
+                }
+                
+                // 随机眨眼
+                if (Math.random() > 0.8) {
+                    animeGirl.style.animation = 'blink 0.3s';
+                    setTimeout(() => {
+                        animeGirl.style.animation = '';
+                    }, 300);
+                }
+            }, 5000);
+            
+            // 拖拽功能
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+            
+            pet.addEventListener("mousedown", dragStart);
+            pet.addEventListener("touchstart", dragStart);
+            
+            function dragStart(e) {
+                if (e.type === "touchstart") {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+                
+                if (e.target === pet) {
+                    isDragging = true;
+                }
+            }
+            
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    
+                    if (e.type === "touchmove") {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+                    
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    
+                    setTranslate(currentX, currentY, pet);
+                }
+            }
+            
+            function dragEnd() {
+                initialX = currentX;
+                initialY = currentY;
+                
+                isDragging = false;
+            }
+            
+            function setTranslate(xPos, yPos, el) {
+                el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+            }
+            
+            document.addEventListener("mouseup", dragEnd);
+            document.addEventListener("touchend", dragEnd);
+            document.addEventListener("mousemove", drag);
+            document.addEventListener("touchmove", drag);
+            
+            // 初始化位置
+            setTranslate(0, 0, pet);
+            
+            // 添加更多樱花
+            function createSakura() {
+                for (let i = 0; i < 15; i++) {
+                    const sakura = document.createElement('div');
+                    sakura.className = 'decoration sakura';
+                    sakura.style.left = `${Math.random() * 100}%`;
+                    sakura.style.top = `${Math.random() * 100}%`;
+                    sakura.style.width = `${Math.random() * 20 + 10}px`;
+                    sakura.style.height = sakura.style.width;
+                    sakura.style.animationDelay = `${Math.random() * -8}s`;
+                    sakura.style.opacity = `${Math.random() * 0.7 + 0.3}`;
+                    document.body.appendChild(sakura);
+                }
+            }
+            
+            createSakura();
+            
+            // 首次问候
+            setTimeout(() => {
+                showSpeech('初次见面，请多关照！我是你的桌宠小可爱~');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+```
